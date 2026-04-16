@@ -288,6 +288,11 @@ canvas {
         <input type="range" id="charsPerLine" min="4" max="40" value="18">
         <span class="range-val" id="charsPerLineVal">18</span>
       </div>
+      <div class="row-inline">
+        <label>上下</label>
+        <input type="range" id="quoteYOffset" min="-260" max="260" value="0">
+        <span class="range-val" id="quoteYOffsetVal">0</span>
+      </div>
     </div>
 
     <!-- Name -->
@@ -308,8 +313,8 @@ canvas {
       </div>
       <div class="row-inline">
         <label>上下</label>
-        <input type="range" id="nameYOffset" min="-200" max="120" value="0">
-        <span class="range-val" id="nameYOffsetVal">0</span>
+        <input type="range" id="nameYOffset" min="-260" max="260" value="288">
+        <span class="range-val" id="nameYOffsetVal">288</span>
       </div>
     </div>
 
@@ -427,6 +432,7 @@ function render() {
   const fontSize = +document.getElementById('fontSize').value;
   const textColor = document.getElementById('textColor').value;
   const charsPerLine = +document.getElementById('charsPerLine').value;
+  const quoteYOffset = +document.getElementById('quoteYOffset').value;
   const quoteText = document.getElementById('quoteText').value;
 
   ctx.font = fontSize + 'px ' + fontFamily;
@@ -444,7 +450,7 @@ function render() {
 
   const areaX = 540, areaW = 560;
   const tx = areaX + (areaW - maxW) / 2;
-  const ty = (H - totalH) / 2;
+  const ty = (H - totalH) / 2 + quoteYOffset;
   for (let i = 0; i < lines.length; i++) {
     ctx.fillText(lines[i], tx, ty + i * fontSize);
   }
@@ -460,7 +466,7 @@ function render() {
   const nw = ctx.measureText(nameText).width;
   const nameAreaX = 600, nameAreaW = 560;
   const nx = nameAreaX + (nameAreaW - nw) / 2;
-  const ny = H - nameFontSize - 20 + nameYOffset;
+  const ny = (H - nameFontSize) / 2 + nameYOffset;
   ctx.fillText(nameText, nx, ny);
 }
 
@@ -548,7 +554,7 @@ document.querySelectorAll('input[name="fontChoice"]').forEach(r => {
 });
 
 // ── Live binding ──
-['fontSize', 'nameFontSize', 'charsPerLine', 'nameYOffset'].forEach(id => {
+['fontSize', 'nameFontSize', 'charsPerLine', 'quoteYOffset', 'nameYOffset'].forEach(id => {
   const el = document.getElementById(id);
   const display = document.getElementById(id + 'Val');
   el.addEventListener('input', () => { display.textContent = el.value; render(); });
