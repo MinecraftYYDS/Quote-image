@@ -280,6 +280,11 @@ canvas {
         <span class="range-val" id="fontSizeVal">42</span>
       </div>
       <div class="row-inline">
+        <label>左右</label>
+        <input type="range" id="nameXOffset" min="-260" max="260" value="0">
+        <span class="range-val" id="nameXOffsetVal">0</span>
+      </div>
+      <div class="row-inline">
         <label>颜色</label>
         <input type="color" id="textColor" value="#ffffff">
       </div>
@@ -460,12 +465,13 @@ function render() {
   const nameColor = document.getElementById('nameColor').value;
   const nameText = document.getElementById('nameInput').value;
   const nameYOffset = +document.getElementById('nameYOffset').value;
+  const nameXOffset = +document.getElementById('nameXOffset').value;
 
   ctx.font = nameFontSize + 'px ' + fontFamily;
   ctx.fillStyle = nameColor;
   const nw = ctx.measureText(nameText).width;
   const nameAreaX = 600, nameAreaW = 560;
-  const nx = nameAreaX + (nameAreaW - nw) / 2;
+  const nx = nameAreaX + (nameAreaW - nw) / 2 + nameXOffset;
   const ny = (H - nameFontSize) / 2 + nameYOffset;
   ctx.fillText(nameText, nx, ny);
 }
@@ -554,7 +560,7 @@ document.querySelectorAll('input[name="fontChoice"]').forEach(r => {
 });
 
 // ── Live binding ──
-['fontSize', 'nameFontSize', 'charsPerLine', 'quoteYOffset', 'nameYOffset'].forEach(id => {
+['fontSize', 'nameFontSize', 'charsPerLine', 'quoteYOffset', 'nameYOffset', 'nameXOffset'].forEach(id => {
   const el = document.getElementById(id);
   const display = document.getElementById(id + 'Val');
   el.addEventListener('input', () => { display.textContent = el.value; render(); });
