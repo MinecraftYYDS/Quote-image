@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>语录卡片生成器</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #0a0a14;
+  color: #e2e8f0;
+  min-height: 100vh;
+}
+
+.header {
+  text-align: center;
+  padding: 20px 16px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #818cf8, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 0.02em;
+}
+.header p {
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.main {
+  display: flex;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 20px;
+  gap: 20px;
+}
+
+.panel {
+  width: 320px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.preview-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.card {
+  background: #12121f;
+  border-radius: 10px;
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.card h3 {
+  font-size: 12px;
+  color: #818cf8;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+label {
+  display: block;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 3px;
+}
+
+input[type="text"], input[type="number"], textarea, select {
+  width: 100%;
+  padding: 7px 10px;
+  background: #0a0a14;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: #818cf8;
+}
+textarea {
+  resize: vertical;
+  min-height: 72px;
+  font-family: inherit;
+  line-height: 1.5;
+}
+input[type="range"] {
+  width: 100%;
+  accent-color: #818cf8;
+}
+input[type="color"] {
+  width: 36px;
+  height: 28px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+input[type="file"] {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.row { margin-bottom: 8px; }
+.row-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.row-inline label { margin-bottom: 0; white-space: nowrap; min-width: 48px; }
+.row-inline input[type="range"] { flex: 1; }
+.range-val {
+  font-size: 12px;
+  color: #818cf8;
+  min-width: 28px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+}
+.btn-primary:hover { opacity: 0.9; }
+.btn-secondary {
+  background: rgba(255,255,255,0.06);
+  color: #e2e8f0;
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.1); }
+.btn-block { width: 100%; justify-content: center; }
+
+.qq-row {
+  display: flex;
+  gap: 6px;
+}
+.qq-row input { flex: 1; }
+
+.divider {
+  text-align: center;
+  color: rgba(255,255,255,0.15);
+  font-size: 11px;
+  margin: 6px 0;
+}
+
+.font-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.font-options label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.08);
+  font-size: 12px;
+  color: #e2e8f0;
+  transition: all 0.15s;
+  margin-bottom: 0;
+}
+.font-options input[type="radio"] { accent-color: #818cf8; }
+.font-options label:has(input:checked) {
+  border-color: #818cf8;
+  background: rgba(129, 140, 248, 0.08);
+}
+
+canvas {
+  border-radius: 8px;
+  max-width: 100%;
+  height: auto;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.5);
+}
+
+.action-row {
+  display: flex;
+  gap: 8px;
+}
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: #22c55e;
+  color: white;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+  z-index: 100;
+}
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.panel::-webkit-scrollbar { width: 3px; }
+.panel::-webkit-scrollbar-track { background: transparent; }
+.panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+@media (max-width: 860px) {
+  .main { flex-direction: column; }
+  .panel { width: 100%; max-height: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>语录卡片生成器</h1>
+  <p>实时预览 · 本地生成 · 无需服务器</p>
+</div>
+
+<div class="main">
+  <div class="panel">
+    <!-- Avatar -->
+    <div class="card">
+      <h3>头像</h3>
+      <div class="row">
+        <label>QQ 号</label>
+        <div class="qq-row">
+          <input type="text" id="qqInput" placeholder="输入 QQ 号" inputmode="numeric">
+          <button class="btn btn-secondary" onclick="fetchAvatar()">获取</button>
+        </div>
+      </div>
+      <div class="divider">— 或 —</div>
+      <div class="row">
+        <label>上传图片</label>
+        <input type="file" id="avatarFile" accept="image/*">
+      </div>
+    </div>
+
+    <!-- Quote Text -->
+    <div class="card">
+      <h3>引用文字</h3>
+      <div class="row">
+        <label>内容</label>
+        <textarea id="quoteText" placeholder="输入语录内容…">在这里输入你的语录文字</textarea>
+      </div>
+      <div class="row-inline">
+        <label>字号</label>
+        <input type="range" id="fontSize" min="16" max="80" value="42">
+        <span class="range-val" id="fontSizeVal">42</span>
+      </div>
+      <div class="row-inline">
+        <label>颜色</label>
+        <input type="color" id="textColor" value="#ffffff">
+      </div>
+      <div class="row-inline">
+        <label>每行字数</label>
+        <input type="range" id="charsPerLine" min="4" max="40" value="18">
+        <span class="range-val" id="charsPerLineVal">18</span>
+      </div>
+    </div>
+
+    <!-- Name -->
+    <div class="card">
+      <h3>署名</h3>
+      <div class="row">
+        <label>名称</label>
+        <input type="text" id="nameInput" value="— 佚名" placeholder="署名">
+      </div>
+      <div class="row-inline">
+        <label>字号</label>
+        <input type="range" id="nameFontSize" min="12" max="48" value="24">
+        <span class="range-val" id="nameFontSizeVal">24</span>
+      </div>
+      <div class="row-inline">
+        <label>颜色</label>
+        <input type="color" id="nameColor" value="#ffffff">
+      </div>
+    </div>
+
+    <!-- Font -->
+    <div class="card">
+      <h3>字体</h3>
+      <div class="font-options">
+        <label><input type="radio" name="fontChoice" value="tsukua" checked> TsukuA</label>
+        <label><input type="radio" name="fontChoice" value="system"> 系统字体</label>
+        <label><input type="radio" name="fontChoice" value="custom"> 自定义</label>
+      </div>
+      <div class="row" id="customFontRow" style="display:none">
+        <input type="file" id="customFontFile" accept=".ttf,.otf,.woff,.woff2,.ttc">
+      </div>
+      <div id="fontStatus" style="font-size:11px;color:#64748b;margin-top:4px;"></div>
+    </div>
+  </div>
+
+  <div class="preview-area">
+    <canvas id="canvas" width="1200" height="640"></canvas>
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="downloadImage()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        下载图片
+      </button>
+      <button class="btn btn-secondary" onclick="copyToClipboard()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        复制到剪贴板
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+let avatarImage = null;
+let customFontName = null;
+let tsukuaLoaded = false;
+
+// ── Font Loading ──
+(async () => {
+  const status = document.getElementById('fontStatus');
+  try {
+    status.textContent = 'TsukuA 字体加载中…';
+    const font = new FontFace('TsukuA', 'url(TsukuA.ttc)');
+    await font.load();
+    document.fonts.add(font);
+    tsukuaLoaded = true;
+    status.textContent = 'TsukuA 已加载';
+    render();
+  } catch {
+    status.textContent = 'TsukuA 加载失败，已回退到系统字体';
+    document.querySelector('input[name="fontChoice"][value="system"]').checked = true;
+    render();
+  }
+})();
+
+function getFont() {
+  const choice = document.querySelector('input[name="fontChoice"]:checked').value;
+  const system = '"Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif';
+  if (choice === 'tsukua') return tsukuaLoaded ? '"TsukuA", ' + system : system;
+  if (choice === 'system') return system;
+  if (choice === 'custom') return customFontName ? '"' + customFontName + '", ' + system : system;
+  return system;
+}
+
+// ── Render ──
+function render() {
+  const W = 1200, H = 640;
+  ctx.clearRect(0, 0, W, H);
+
+  // Black background
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, W, H);
+
+  // Avatar
+  if (avatarImage) {
+    const iw = avatarImage.naturalWidth || avatarImage.width;
+    const ih = avatarImage.naturalHeight || avatarImage.height;
+    const minDim = 640;
+    let scale = 1;
+    if (iw < minDim || ih < minDim) {
+      scale = Math.max(minDim / iw, minDim / ih);
+    }
+    ctx.drawImage(avatarImage, 0, 0, iw * scale, ih * scale);
+  } else {
+    // Placeholder
+    ctx.fillStyle = '#1e1e2e';
+    ctx.fillRect(0, 0, 500, H);
+    ctx.fillStyle = '#2a2a3e';
+    ctx.font = '48px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('头像', 250, H / 2);
+  }
+
+  // Gradient overlay (transparent → black)
+  const grad = ctx.createLinearGradient(0, 0, W, 0);
+  grad.addColorStop(0, 'rgba(0,0,0,0)');
+  grad.addColorStop(0.10, 'rgba(0,0,0,0)');
+  grad.addColorStop(0.28, 'rgba(0,0,0,0.4)');
+  grad.addColorStop(0.38, 'rgba(0,0,0,0.8)');
+  grad.addColorStop(0.45, 'rgba(0,0,0,1)');
+  grad.addColorStop(1, 'rgba(0,0,0,1)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  const fontFamily = getFont();
+
+  // ── Quote text ──
+  const fontSize = +document.getElementById('fontSize').value;
+  const textColor = document.getElementById('textColor').value;
+  const charsPerLine = +document.getElementById('charsPerLine').value;
+  const quoteText = document.getElementById('quoteText').value;
+
+  ctx.font = fontSize + 'px ' + fontFamily;
+  ctx.fillStyle = textColor;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+
+  const lines = splitText(quoteText, charsPerLine);
+  const totalH = fontSize * lines.length;
+  let maxW = 0;
+  for (const l of lines) {
+    const w = ctx.measureText(l).width;
+    if (w > maxW) maxW = w;
+  }
+
+  const areaX = 540, areaW = 560;
+  const tx = areaX + (areaW - maxW) / 2;
+  const ty = (H - totalH) / 2;
+  for (let i = 0; i < lines.length; i++) {
+    ctx.fillText(lines[i], tx, ty + i * fontSize);
+  }
+
+  // ── Name ──
+  const nameFontSize = +document.getElementById('nameFontSize').value;
+  const nameColor = document.getElementById('nameColor').value;
+  const nameText = document.getElementById('nameInput').value;
+
+  ctx.font = nameFontSize + 'px ' + fontFamily;
+  ctx.fillStyle = nameColor;
+  const nw = ctx.measureText(nameText).width;
+  const nameAreaX = 600, nameAreaW = 560;
+  const nx = nameAreaX + (nameAreaW - nw) / 2;
+  const ny = H - nameFontSize - 20;
+  ctx.fillText(nameText, nx, ny);
+}
+
+function splitText(text, n) {
+  const result = [];
+  const paras = text.split('\n');
+  for (const p of paras) {
+    if (p.length === 0) { result.push(''); continue; }
+    for (let i = 0; i < p.length; i += n) {
+      result.push(p.substring(i, i + n));
+    }
+  }
+  return result.length ? result : [''];
+}
+
+// ── Avatar fetching ──
+async function fetchAvatar() {
+  const qq = document.getElementById('qqInput').value.trim();
+  if (!qq || !/^\d{4,12}$/.test(qq)) { showToast('请输入有效的 QQ 号', true); return; }
+
+  const tryLoad = (url) => new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = url;
+  });
+
+  showToast('正在获取头像…');
+
+  // Try same-origin proxy first, then direct
+  try {
+    avatarImage = await tryLoad('/api/avatar?qq=' + encodeURIComponent(qq));
+    render();
+    showToast('头像加载成功');
+    return;
+  } catch {}
+
+  try {
+    avatarImage = await tryLoad('https://q1.qlogo.cn/g?b=qq&nk=' + encodeURIComponent(qq) + '&s=640');
+    render();
+    showToast('头像加载成功（直连）');
+    return;
+  } catch {}
+
+  showToast('获取失败，请手动上传图片', true);
+}
+
+// ── File uploads ──
+document.getElementById('avatarFile').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => { avatarImage = img; render(); };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('customFontFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const buf = await file.arrayBuffer();
+    const name = 'UserFont_' + Date.now();
+    const face = new FontFace(name, buf);
+    await face.load();
+    document.fonts.add(face);
+    customFontName = name;
+    render();
+    showToast('自定义字体已加载');
+  } catch (err) {
+    showToast('字体加载失败: ' + err.message, true);
+  }
+});
+
+// ── Font choice toggle ──
+document.querySelectorAll('input[name="fontChoice"]').forEach(r => {
+  r.addEventListener('change', () => {
+    document.getElementById('customFontRow').style.display = r.value === 'custom' && r.checked ? 'block' : 'none';
+    render();
+  });
+});
+
+// ── Live binding ──
+['fontSize', 'nameFontSize', 'charsPerLine'].forEach(id => {
+  const el = document.getElementById(id);
+  const display = document.getElementById(id + 'Val');
+  el.addEventListener('input', () => { display.textContent = el.value; render(); });
+});
+['quoteText', 'textColor', 'nameInput', 'nameColor'].forEach(id => {
+  document.getElementById(id).addEventListener('input', render);
+});
+document.getElementById('qqInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') fetchAvatar();
+});
+
+// ── Export ──
+function downloadImage() {
+  try {
+    canvas.toBlob((blob) => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'quote_' + Date.now() + '.png';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }, 'image/png');
+  } catch {
+    showToast('导出失败：头像存在跨域限制，请上传本地图片', true);
+  }
+}
+
+async function copyToClipboard() {
+  try {
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    showToast('已复制到剪贴板');
+  } catch {
+    showToast('复制失败，请使用下载功能', true);
+  }
+}
+
+// ── Toast ──
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = isError ? '#ef4444' : '#22c55e';
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// Initial render
+render();
+</script>
+</body>
+</html>
