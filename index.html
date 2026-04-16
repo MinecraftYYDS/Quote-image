@@ -173,6 +173,29 @@ input[type="file"] {
   margin: 6px 0;
 }
 
+.collapse {
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 6px 8px;
+  margin-top: 8px;
+}
+.collapse summary {
+  list-style: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: #cbd5e1;
+  user-select: none;
+}
+.collapse summary::-webkit-details-marker { display: none; }
+.collapse summary::after {
+  content: '展开';
+  float: right;
+  color: #64748b;
+  font-size: 11px;
+}
+.collapse[open] summary::after { content: '收起'; }
+.collapse-body { margin-top: 8px; }
+
 .font-options {
   display: flex;
   flex-wrap: wrap;
@@ -265,6 +288,26 @@ canvas {
         <label>上传图片</label>
         <input type="file" id="avatarFile" accept="image/*">
       </div>
+      <details class="collapse">
+        <summary>头像微调（默认折叠）</summary>
+        <div class="collapse-body">
+          <div class="row-inline">
+            <label>左右</label>
+            <input type="range" id="avatarXOffset" min="-600" max="600" value="0">
+            <span class="range-val" id="avatarXOffsetVal">0</span>
+          </div>
+          <div class="row-inline">
+            <label>上下</label>
+            <input type="range" id="avatarYOffset" min="-400" max="400" value="0">
+            <span class="range-val" id="avatarYOffsetVal">0</span>
+          </div>
+          <div class="row-inline">
+            <label>缩放</label>
+            <input type="range" id="avatarScale" min="20" max="300" value="100">
+            <span class="range-val" id="avatarScaleVal">100</span>
+          </div>
+        </div>
+      </details>
     </div>
 
     <!-- Quote Text -->
@@ -403,12 +446,16 @@ function render() {
   if (avatarImage) {
     const iw = avatarImage.naturalWidth || avatarImage.width;
     const ih = avatarImage.naturalHeight || avatarImage.height;
+    const avatarXOffset = +document.getElementById('avatarXOffset').value;
+    const avatarYOffset = +document.getElementById('avatarYOffset').value;
+    const avatarScaleRatio = +document.getElementById('avatarScale').value / 100;
     const minDim = 640;
-    let scale = 1;
+    let baseScale = 1;
     if (iw < minDim || ih < minDim) {
-      scale = Math.max(minDim / iw, minDim / ih);
+      baseScale = Math.max(minDim / iw, minDim / ih);
     }
-    ctx.drawImage(avatarImage, 0, 0, iw * scale, ih * scale);
+    const scale = baseScale * avatarScaleRatio;
+    ctx.drawImage(avatarImage, avatarXOffset, avatarYOffset, iw * scale, ih * scale);
   } else {
     // Placeholder
     ctx.fillStyle = '#1e1e2e';
@@ -560,7 +607,7 @@ document.querySelectorAll('input[name="fontChoice"]').forEach(r => {
 });
 
 // ── Live binding ──
-['fontSize', 'nameFontSize', 'charsPerLine', 'quoteYOffset', 'nameYOffset', 'nameXOffset'].forEach(id => {
+['fontSize', 'nameFontSize', 'charsPerLine', 'quoteYOffset', 'nameYOffset', 'nameXOffset', 'avatarXOffset', 'avatarYOffset', 'avatarScale'].forEach(id => {
   const el = document.getElementById(id);
   const display = document.getElementById(id + 'Val');
   el.addEventListener('input', () => { display.textContent = el.value; render(); });
