@@ -306,6 +306,11 @@ canvas {
         <label>颜色</label>
         <input type="color" id="nameColor" value="#ffffff">
       </div>
+      <div class="row-inline">
+        <label>上下</label>
+        <input type="range" id="nameYOffset" min="-200" max="120" value="0">
+        <span class="range-val" id="nameYOffsetVal">0</span>
+      </div>
     </div>
 
     <!-- Font -->
@@ -448,13 +453,14 @@ function render() {
   const nameFontSize = +document.getElementById('nameFontSize').value;
   const nameColor = document.getElementById('nameColor').value;
   const nameText = document.getElementById('nameInput').value;
+  const nameYOffset = +document.getElementById('nameYOffset').value;
 
   ctx.font = nameFontSize + 'px ' + fontFamily;
   ctx.fillStyle = nameColor;
   const nw = ctx.measureText(nameText).width;
   const nameAreaX = 600, nameAreaW = 560;
   const nx = nameAreaX + (nameAreaW - nw) / 2;
-  const ny = H - nameFontSize - 20;
+  const ny = H - nameFontSize - 20 + nameYOffset;
   ctx.fillText(nameText, nx, ny);
 }
 
@@ -542,7 +548,7 @@ document.querySelectorAll('input[name="fontChoice"]').forEach(r => {
 });
 
 // ── Live binding ──
-['fontSize', 'nameFontSize', 'charsPerLine'].forEach(id => {
+['fontSize', 'nameFontSize', 'charsPerLine', 'nameYOffset'].forEach(id => {
   const el = document.getElementById(id);
   const display = document.getElementById(id + 'Val');
   el.addEventListener('input', () => { display.textContent = el.value; render(); });
